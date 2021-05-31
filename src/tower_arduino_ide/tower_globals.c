@@ -4,15 +4,16 @@
 #include "nodeio.ioio.h"
 #include "sd_handler.h"
 #include "linac.h"
+#include "injector.h"
 #include "Arduino.h"
 
 static actuator_state_t global_requested_state;
 static actuator_state_t global_current_state = {
-    .remote_fill_valve = 0,
-    .remote_vent_valve = 0,
-    .run_tank_valve = 1,
+    .valve_1 = 0,
+    .valve_2 = 0,
+    .valve_3 = 0,
+    .valve_4 = 0,
     .injector_valve = 0,
-    .linear_actuator = 0,
     .ignition_power = 0,
     .ignition_select = 0
 };
@@ -36,65 +37,89 @@ daq_holder_t* get_global_current_daq(){
 //to the outputs
 void apply_state(){
 
-    if(global_requested_state.remote_fill_valve != global_current_state.remote_fill_valve){
-        //we need to change the remote_fill_valve to what requested wants
-        global_current_state.remote_fill_valve = global_requested_state.remote_fill_valve;
-        if(global_current_state.remote_fill_valve){
-            //open the remote_fill_valve
-            digitalWrite((uint8_t) PIN_REMOTEFILL_POWER, HIGH);
-            digitalWrite((uint8_t) PIN_REMOTEFILL_SELECT, LOW);
+    if(global_requested_state.valve_1 != global_current_state.valve_1){
+        //we need to change the valve_1 to what requested wants
+        global_current_state.valve_1 = global_requested_state.valve_1;
+        if(global_current_state.valve_1){
+            //open the valve_1
+            digitalWrite((uint8_t) PIN_VALVE_1_POWER, HIGH);
+            digitalWrite((uint8_t) PIN_VALVE_1_SELECT, LOW);
         } else {
-            //close the remote_fill_valve
-            digitalWrite((uint8_t) PIN_REMOTEFILL_POWER, HIGH);
-            digitalWrite((uint8_t) PIN_REMOTEFILL_SELECT, HIGH);
+            //close the valve_1
+            digitalWrite((uint8_t) PIN_VALVE_1_POWER, HIGH);
+            digitalWrite((uint8_t) PIN_VALVE_1_SELECT, HIGH);
         }
     }
 
-    if(global_requested_state.remote_vent_valve != global_current_state.remote_vent_valve){
-        //we need to change the remote_vent_valve to what requested wants
-        global_current_state.remote_vent_valve = global_requested_state.remote_vent_valve;
-        if(global_current_state.remote_vent_valve){
-            //open the remote_vent_valve
-            digitalWrite((uint8_t) PIN_REMOTEVENT_POWER, HIGH);
-            digitalWrite((uint8_t) PIN_REMOTEVENT_SELECT, LOW);
+    if(global_requested_state.valve_2 != global_current_state.valve_2){
+        //we need to change the valve_2 to what requested wants
+        global_current_state.valve_2 = global_requested_state.valve_2;
+        if(global_current_state.valve_2){
+            //open the valve_2
+            digitalWrite((uint8_t) PIN_VALVE_2_POWER, HIGH);
+            digitalWrite((uint8_t) PIN_VALVE_2_SELECT, LOW);
         } else {
-            //close the remote_vent_valve
-            digitalWrite((uint8_t) PIN_REMOTEVENT_POWER, HIGH);
-            digitalWrite((uint8_t) PIN_REMOTEVENT_SELECT, HIGH);
+            //close the valve_2
+            digitalWrite((uint8_t) PIN_VALVE_2_POWER, HIGH);
+            digitalWrite((uint8_t) PIN_VALVE_2_SELECT, HIGH);
         }
     }
 
-    global_current_state.run_tank_valve = global_requested_state.run_tank_valve;
+    if(global_requested_state.valve_3 != global_current_state.valve_3){
+        //we need to change the valve_2 to what requested wants
+        global_current_state.valve_3 = global_requested_state.valve_3;
+        if(global_current_state.valve_3){
+            //open the valve_3
+            digitalWrite((uint8_t) PIN_VALVE_3_POWER, HIGH);
+            digitalWrite((uint8_t) PIN_VALVE_3_SELECT, LOW);
+        } else {
+            //close the valve_3
+            digitalWrite((uint8_t) PIN_VALVE_3_POWER, HIGH);
+            digitalWrite((uint8_t) PIN_VALVE_3_SELECT, HIGH);
+        }
+    }
+
+    if(global_requested_state.valve_4 != global_current_state.valve_4){
+        //we need to change the valve_4 to what requested wants
+        global_current_state.valve_4 = global_requested_state.valve_4;
+        if(global_current_state.valve_4){
+            //open the valve_4
+            digitalWrite((uint8_t) PIN_VALVE_4_POWER, HIGH);
+            digitalWrite((uint8_t) PIN_VALVE_4_SELECT, LOW);
+        } else {
+            //close the valve_4
+            digitalWrite((uint8_t) PIN_VALVE_4_POWER, HIGH);
+            digitalWrite((uint8_t) PIN_VALVE_4_SELECT, HIGH);
+        }
+    }
+/*
+    global_current_state.valve_3 = global_requested_state.valve_3;
     //tell nodeio.ioio that we want the vent to change
-    if(global_requested_state.run_tank_valve){
+    if(global_requested_state.valve_3){
         //we want it open
         nio_set_vent_desired(VALVE_OPEN);
     }
     else {
         nio_set_vent_desired(VALVE_CLOSED);
     }
-
+*/
     global_current_state.injector_valve = global_requested_state.injector_valve;
-    //tell nodeio.ioio that we want the injector to change
+    //tell nodeio.ioio that we want the injector to change and change the injector valves
     if(global_requested_state.injector_valve){
         //we want it open
         nio_set_inj_desired(VALVE_OPEN);
+        //open it
+        digitalWrite((uint8_t) PIN_INJECTOR_VALVE_POWER, HIGH);
+        digitalWrite((uint8_t) PIN_INJECTOR_VALVE_SELECT, LOW);
+
+        
     }
     else {
         nio_set_inj_desired(VALVE_CLOSED);
-    }
-
-    if(global_requested_state.linear_actuator != global_current_state.linear_actuator){
-        //we need to change the linear_actuator to what requested wants
-        if(global_current_state.linear_actuator){
-            //retract the linear_actuator
-            if(linac_retract())
-                global_current_state.linear_actuator = global_requested_state.linear_actuator;
-        } else {
-            //extend the linear_actuator
-            if(linac_extend())
-                global_current_state.linear_actuator = global_requested_state.linear_actuator;
-        }
+        // close it
+        digitalWrite((uint8_t) PIN_INJECTOR_VALVE_POWER, HIGH);
+        digitalWrite((uint8_t) PIN_INJECTOR_VALVE_SELECT, HIGH);
+        
     }
 
     if(global_requested_state.ignition_power != global_current_state.ignition_power){
@@ -104,23 +129,17 @@ void apply_state(){
             //decide whether to write to primary or secondary ignition
             if(global_requested_state.ignition_select) {
                 //write to secondary
-                digitalWrite((uint8_t) PIN_IGNITION_PRIMARY_POWER, LOW);
-                digitalWrite((uint8_t) PIN_IGNITION_PRIMARY_SELECT, LOW);
-                digitalWrite((uint8_t) PIN_IGNITION_SECONDARY_POWER, HIGH);
-                digitalWrite((uint8_t) PIN_IGNITION_SECONDARY_SELECT, HIGH);
+                digitalWrite((uint8_t) PIN_IGNITION_POWER, HIGH);
+                digitalWrite((uint8_t) PIN_IGNITION_SELECT, LOW);
             } else {
                 //write to primary
-                digitalWrite((uint8_t) PIN_IGNITION_PRIMARY_POWER, HIGH);
-                digitalWrite((uint8_t) PIN_IGNITION_PRIMARY_SELECT, HIGH);
-                digitalWrite((uint8_t) PIN_IGNITION_SECONDARY_POWER, LOW);
-                digitalWrite((uint8_t) PIN_IGNITION_SECONDARY_SELECT, LOW);
+                digitalWrite((uint8_t) PIN_IGNITION_POWER, HIGH);
+                digitalWrite((uint8_t) PIN_IGNITION_SELECT, HIGH);
+
             }
         } else {
             //remove power from ignition circuit
-            digitalWrite((uint8_t) PIN_IGNITION_PRIMARY_POWER, LOW);
-            digitalWrite((uint8_t) PIN_IGNITION_PRIMARY_SELECT, LOW);
-            digitalWrite((uint8_t) PIN_IGNITION_SECONDARY_POWER, LOW);
-            digitalWrite((uint8_t) PIN_IGNITION_SECONDARY_SELECT, LOW);
+            digitalWrite((uint8_t) PIN_IGNITION_POWER, LOW);
         }
     }
 
@@ -132,51 +151,58 @@ void apply_state(){
 
 //the client sent a NACK, so copy current state to requested state
 void reset_request(){
-    global_requested_state.remote_fill_valve = global_current_state.remote_fill_valve;
-    global_requested_state.remote_vent_valve = global_current_state.remote_vent_valve;
-    global_requested_state.run_tank_valve = global_current_state.run_tank_valve;
-    global_requested_state.linear_actuator = global_current_state.linear_actuator;
+    global_requested_state.valve_1 = global_current_state.valve_1;
+    global_requested_state.valve_2 = global_current_state.valve_2;
+    global_requested_state.valve_3 = global_current_state.valve_3;
+    global_requested_state.valve_4 = global_current_state.valve_4;
+    global_requested_state.injector_valve = global_current_state.injector_valve;
     global_requested_state.ignition_power = global_current_state.ignition_power;
     global_requested_state.ignition_select = global_current_state.ignition_select;
 }
 
 void init_outputs(){
-    pinMode(PIN_REMOTEFILL_POWER, OUTPUT);
-    pinMode(PIN_REMOTEFILL_SELECT, OUTPUT);
-    pinMode(PIN_REMOTEVENT_POWER, OUTPUT);
-    pinMode(PIN_REMOTEVENT_SELECT, OUTPUT);
-    pinMode(PIN_LINACTUATOR_POWER, OUTPUT);
-    pinMode(PIN_LINACTUATOR_SELECT, OUTPUT);
+    pinMode(PIN_VALVE_1_POWER, OUTPUT);
+    pinMode(PIN_VALVE_1_SELECT, OUTPUT);
+    pinMode(PIN_VALVE_2_POWER, OUTPUT);
+    pinMode(PIN_VALVE_2_SELECT, OUTPUT);
+    pinMode(PIN_VALVE_3_POWER, OUTPUT);
+    pinMode(PIN_VALVE_3_SELECT, OUTPUT);
+    pinMode(PIN_VALVE_4_POWER, OUTPUT);
+    pinMode(PIN_VALVE_4_SELECT, OUTPUT);
+    pinMode(PIN_INJECTOR_VALVE_POWER, OUTPUT);
+    pinMode(PIN_INJECTOR_VALVE_SELECT, OUTPUT);
 
-    pinMode(PIN_IGNITION_PRIMARY_POWER, OUTPUT);
-    pinMode(PIN_IGNITION_PRIMARY_SELECT, OUTPUT);
-    pinMode(PIN_IGNITION_SECONDARY_POWER, OUTPUT);
-    pinMode(PIN_IGNITION_SECONDARY_SELECT, OUTPUT);
-
+    pinMode(PIN_IGNITION_POWER, OUTPUT);
+    pinMode(PIN_IGNITION_SELECT, OUTPUT);
+    
     //close the valves. This is the safest startup state
-    //fill valve
-    digitalWrite((uint8_t) PIN_REMOTEFILL_POWER, HIGH);
-    digitalWrite((uint8_t) PIN_REMOTEFILL_SELECT, HIGH); //select pin going high should set it to close, if it's wired right
 
-    //vent valve
-    digitalWrite((uint8_t) PIN_REMOTEVENT_POWER, HIGH);
-    digitalWrite((uint8_t) PIN_REMOTEVENT_SELECT, HIGH);
+    digitalWrite((uint8_t) PIN_VALVE_1_POWER, HIGH);
+    digitalWrite((uint8_t) PIN_VALVE_1_SELECT, HIGH); //select pin going high should set it to close, if it's wired right
+
+    digitalWrite((uint8_t) PIN_VALVE_2_POWER, HIGH);
+    digitalWrite((uint8_t) PIN_VALVE_2_SELECT, HIGH);
+    
+    digitalWrite((uint8_t) PIN_VALVE_3_POWER, HIGH);
+    digitalWrite((uint8_t) PIN_VALVE_3_SELECT, HIGH);
+
+    digitalWrite((uint8_t) PIN_VALVE_4_POWER, HIGH);
+    digitalWrite((uint8_t) PIN_VALVE_4_SELECT, HIGH);
+    
+    digitalWrite((uint8_t) PIN_INJECTOR_VALVE_POWER, HIGH);
+    digitalWrite((uint8_t) PIN_INJECTOR_VALVE_SELECT, HIGH);
 
     //run tank valve
     //TODO, figure out how the run tank valve is going to work
     //likely involve a serial link to another arduino
+    //I don't think this should be here, we have RocketCAN - Zach 2020-02-20
 
     linac_init();
 
     //ignition, set to off by default
-    digitalWrite((uint8_t) PIN_IGNITION_PRIMARY_POWER, LOW);
-    digitalWrite((uint8_t) PIN_IGNITION_PRIMARY_SELECT, LOW);
-    digitalWrite((uint8_t) PIN_IGNITION_SECONDARY_POWER, LOW);
-    digitalWrite((uint8_t) PIN_IGNITION_SECONDARY_SELECT, LOW);
+    digitalWrite((uint8_t) PIN_IGNITION_POWER, LOW);
+    digitalWrite((uint8_t) PIN_IGNITION_SELECT, LOW);
 
-    //turn off the pin 13 LED
-    pinMode(13, OUTPUT);
-    digitalWrite(13, LOW);
 }
 
 //called when client hasn't told us to do anything for a while
@@ -188,18 +214,16 @@ void goto_safe_mode()
     //state, and then call apply_state
     actuator_state_t* requested = get_requested_state();
 
-    //close both valves we have direct control over
-    requested->remote_fill_valve = 0;
-    requested->remote_vent_valve = 0;
-
-    //open the rocket vent valve
-    requested->run_tank_valve = 1;
-
-    //do not touch the injector valve. Keep it where it is
-    requested->injector_valve = get_current_state()->injector_valve;
-
-    //don't move the linear actuator
-    requested->linear_actuator = get_current_state()->linear_actuator;
+    //close
+    requested->valve_1 = 0;
+    //open
+    requested->valve_2 = 1;
+    //open
+    requested->valve_3 = 1;
+    //close
+    requested->valve_4 = 0;
+    //close
+    requested->injector_valve = 0;
 
     //turn off ignition
     requested->ignition_power = 0;

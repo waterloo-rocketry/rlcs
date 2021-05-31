@@ -32,100 +32,102 @@ static unsigned long cycles_remaining_in_move = 0;
 //public functions
 void linac_init()
 {
-    pinMode(PIN_LINACTUATOR_POWER, OUTPUT);
-    digitalWrite(PIN_LINACTUATOR_POWER, LOW);
-    pinMode(PIN_LINACTUATOR_SELECT, OUTPUT);
-    digitalWrite(PIN_LINACTUATOR_SELECT, LOW);
+    // pinMode(PIN_LINACTUATOR_POWER, OUTPUT);
+    // digitalWrite(PIN_LINACTUATOR_POWER, LOW);
+    // pinMode(PIN_LINACTUATOR_SELECT, OUTPUT);
+    // digitalWrite(PIN_LINACTUATOR_SELECT, LOW);
 }
 
 void linac_refresh()
 {
-    switch(current_timer_state)
-    {
-    case LINAC_MOVING_POWERED:
-        //state exit conditions
-        if(millis() >= next_state_transition){
-            //stop sending power to the linear actuator
-            digitalWrite(PIN_LINACTUATOR_POWER, LOW);
-            //setup next state
-            current_timer_state = LINAC_MOVING_UNPOWERED;
-            //we become ready after LINAC_COOLDOWN_TIME seconds
-            next_state_transition = millis() + LINAC_UNPOWERED_TIME_MOVING;
-        }
-        break;
-    case LINAC_MOVING_UNPOWERED:
-        if(millis() >= next_state_transition){
-            //decide whether to go to cooldown
-            if(--cycles_remaining_in_move == 0){
-                //go to cooldown
-                current_timer_state = LINAC_COOLDOWN;
-                next_state_transition = millis() + LINAC_COOLDOWN_TIME;
-            } else {
-                //power up again
-                digitalWrite(PIN_LINACTUATOR_POWER, HIGH);
-                //setup time to come back to unpowered mode
-                current_timer_state = LINAC_MOVING_POWERED;
-                next_state_transition = millis() + LINAC_POWERED_TIME_MOVING;
-            }
-        }
-        break;
-    case LINAC_COOLDOWN:
-        //state exit conditions
-        if(millis() >= next_state_transition){
-            //goto ready state
-            current_timer_state = LINAC_READY;
-            //don't need to change next_state_transition because
-            //we only leave ready state when we're told to do something
-            //with the actuator
-        }
-        break;
-    case LINAC_READY: //don't do anything
-    default:
-        break;
-    }
+    // switch(current_timer_state)
+    // {
+    // case LINAC_MOVING_POWERED:
+    //     //state exit conditions
+    //     if(millis() >= next_state_transition){
+    //         //stop sending power to the linear actuator
+    //         digitalWrite(PIN_LINACTUATOR_POWER, LOW);
+    //         //setup next state
+    //         current_timer_state = LINAC_MOVING_UNPOWERED;
+    //         //we become ready after LINAC_COOLDOWN_TIME seconds
+    //         next_state_transition = millis() + LINAC_UNPOWERED_TIME_MOVING;
+    //     }
+    //     break;
+    // case LINAC_MOVING_UNPOWERED:
+    //     if(millis() >= next_state_transition){
+    //         //decide whether to go to cooldown
+    //         if(--cycles_remaining_in_move == 0){
+    //             //go to cooldown
+    //             current_timer_state = LINAC_COOLDOWN;
+    //             next_state_transition = millis() + LINAC_COOLDOWN_TIME;
+    //         } else {
+    //             //power up again
+    //             digitalWrite(PIN_LINACTUATOR_POWER, HIGH);
+    //             //setup time to come back to unpowered mode
+    //             current_timer_state = LINAC_MOVING_POWERED;
+    //             next_state_transition = millis() + LINAC_POWERED_TIME_MOVING;
+    //         }
+    //     }
+    //     break;
+    // case LINAC_COOLDOWN:
+    //     //state exit conditions
+    //     if(millis() >= next_state_transition){
+    //         //goto ready state
+    //         current_timer_state = LINAC_READY;
+    //         //don't need to change next_state_transition because
+    //         //we only leave ready state when we're told to do something
+    //         //with the actuator
+    //     }
+    //     break;
+    // case LINAC_READY: //don't do anything
+    // default:
+    //     break;
+    // }
 }
 
 uint8_t linac_extend()
 {
-    //if we're not ready to extend it, like, don't do anything
-    if(current_timer_state != LINAC_READY)
-        return false;
-    //if we think that the linear actuator is currently extended, we
-    //return true (since it's extended, the caller has what they want)
-    if(current_linac_state == LINAC_EXTENDED)
-        return true;
+    // //if we're not ready to extend it, like, don't do anything
+    // if(current_timer_state != LINAC_READY)
+    //     return false;
+    // //if we think that the linear actuator is currently extended, we
+    // //return true (since it's extended, the caller has what they want)
+    // if(current_linac_state == LINAC_EXTENDED)
+    //     return true;
 
-    //at this point, we know that we're allowed to extend the linear
-    //actuator. So do that. the select pin needs to be written high
-    //for this to work right
-    digitalWrite(PIN_LINACTUATOR_SELECT, HIGH); 
-    digitalWrite(PIN_LINACTUATOR_POWER, HIGH);
+    // //at this point, we know that we're allowed to extend the linear
+    // //actuator. So do that. the select pin needs to be written high
+    // //for this to work right
+    // digitalWrite(PIN_LINACTUATOR_SELECT, HIGH); 
+    // digitalWrite(PIN_LINACTUATOR_POWER, HIGH);
 
-    //remember to stop moving after a certain amount of time
-    current_timer_state = LINAC_MOVING_POWERED;
-    cycles_remaining_in_move = LINAC_CYCLES_MOVING;
-    next_state_transition = millis() + LINAC_POWERED_TIME_MOVING;
-    current_linac_state = LINAC_EXTENDED;
-    //it worked. So return true
-    return true;
+    // //remember to stop moving after a certain amount of time
+    // current_timer_state = LINAC_MOVING_POWERED;
+    // cycles_remaining_in_move = LINAC_CYCLES_MOVING;
+    // next_state_transition = millis() + LINAC_POWERED_TIME_MOVING;
+    // current_linac_state = LINAC_EXTENDED;
+    // //it worked. So return true
+    // return true;
+    return false;
 }
 
 //logic largely copied from linac_extend, hence the lack of explanation
 //comments
 uint8_t linac_retract()
 {
-    if(current_timer_state != LINAC_READY)
-        return false;
-    if(current_linac_state == LINAC_RETRACTED)
-        return true;
+    // if(current_timer_state != LINAC_READY)
+    //     return false;
+    // if(current_linac_state == LINAC_RETRACTED)
+    //     return true;
 
-    digitalWrite(PIN_LINACTUATOR_SELECT, LOW); 
-    digitalWrite(PIN_LINACTUATOR_POWER, HIGH);
+    // digitalWrite(PIN_LINACTUATOR_SELECT, LOW); 
+    // digitalWrite(PIN_LINACTUATOR_POWER, HIGH);
 
-    current_timer_state = LINAC_MOVING_POWERED;
-    cycles_remaining_in_move = LINAC_CYCLES_MOVING;
-    next_state_transition = millis() + LINAC_POWERED_TIME_MOVING;
-    current_linac_state = LINAC_RETRACTED;
+    // current_timer_state = LINAC_MOVING_POWERED;
+    // cycles_remaining_in_move = LINAC_CYCLES_MOVING;
+    // next_state_transition = millis() + LINAC_POWERED_TIME_MOVING;
+    // current_linac_state = LINAC_RETRACTED;
 
-    return true;
+    // return true;
+    return false;
 }

@@ -28,6 +28,7 @@ enum BOARD_STATUS {
     E_CODING_FUCKUP,
     E_BATT_OVER_CURRENT,
 };
+
 typedef struct {
     uint8_t board_id;
     enum BOARD_STATUS err_type;
@@ -36,7 +37,6 @@ typedef struct {
     uint8_t byte6;
     uint8_t byte7;
 } error_t;
-
 
 //packets that can be sent over the radio
 //their meanings are better understood if
@@ -370,12 +370,12 @@ static bool deserialize_state(system_state *state, const char *str)
     // Bits 5-2 represent the number of boards connected
     state->num_boards_connected = (raw & 0b00111100) >> 2;
     // Bits 1-0 represent the injector valve state
-    state->injector_valve_state = (raw & 0x3);
+    state->injector_valve_state = (nio_actuator_state)(raw & 0x3);
 
     raw = base64_to_binary(str[1]);
 
     // Bits 5-4 represent the vent valve state
-    state->vent_valve_state = ((raw & 0x30) >> 4);
+    state->vent_valve_state = (nio_actuator_state)((raw & 0x30) >> 4);
     // Bit 3-0 are bits 9-6 of tank pressure
     state->tank_pressure = ((uint16_t) (raw & 0xf)) << 6;
 

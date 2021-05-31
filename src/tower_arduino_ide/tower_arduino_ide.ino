@@ -9,6 +9,9 @@
 #include "Arduino.h"
 #include "sd_handler.h"
 #include "linac.h"
+#include "injector.h"
+
+
 
 void setup() {
     //initialize all outputs
@@ -66,6 +69,11 @@ void loop() {
 
     linac_refresh();
 
+    //not a thing right now
+    //deal with the liquid injector
+    //fuel_injector_refresh();
+    //ox_injector_refresh();
+
     /*
      * Unfortunately, without convert_state_to_radio, we can't display on the 7seg
      * so.... Gonna skip that for now
@@ -73,7 +81,8 @@ void loop() {
     //put the current state on the the seven segment display
     char to_put_on_sevenseg;
     if( convert_state_to_radio(get_current_state(), &to_put_on_sevenseg) ) {
-        setNewNum_SevSeg( (uint8_t) fromBase64(to_put_on_sevenseg) );
+        // DEPRECATED: setNewNum_SevSeg( (uint8_t) fromBase64(to_put_on_sevenseg) );
+        setNewNum_SevSeg( (uint8_t) to_put_on_sevenseg);
     }
     refresh_SevSeg();
     */

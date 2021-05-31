@@ -3,6 +3,7 @@
 #include "shared_types.h"
 #include "Arduino.h"
 
+
 static actuator_state_t global_button_state, global_tower_state;
 static daq_holder_t global_current_daq = {
     .pressure1 = 999,
@@ -11,24 +12,24 @@ static daq_holder_t global_current_daq = {
     .rocket_mass = 0xFFFF,
     .ign_pri_current = 0xFFFF,
     .ign_sec_current = 0xFFFF,
-    .rfill_lsw_open = 0,
-    .rfill_lsw_closed = 0,
-    .rvent_lsw_open = 0,
-    .rvent_lsw_closed = 0,
+    .valve_1_lsw_open = 0,
+    .valve_1_lsw_closed = 0,
+    .valve_2_lsw_open = 0,
+    .valve_2_lsw_closed = 0,
 
     .rocketvent_valve_state = DAQ_VALVE_UNK,
     .injector_valve_state = DAQ_VALVE_UNK,
 
-    .linac_lsw_extend = 0,
-    .linac_lsw_retract = 0
+    .valve_3_lsw_open = 0,
+    .valve_3_lsw_closed = 0
 };
 
 typedef uint8_t button_t;
 static struct {
-    button_t remotefill;
-    button_t remotevent;
-    button_t rocketvalve;
-    button_t linactuator;
+    button_t valve_1;
+    button_t valve_2;
+    button_t valve_3;
+    button_t valve_4;
     button_t injector;
     button_t ignition_pri;
     button_t ignition_sec;
@@ -44,10 +45,10 @@ actuator_state_t *get_button_state()
     if (global_button_state_tainted) {
         //recalculate button state. We do calculations here for
         //software debouncing purposes
-        button_t remotefill = 1;
-        button_t remotevent = 1;
-        button_t rocketvalve = 1;
-        button_t linactuator = 1;
+        button_t valve_1 = 1;
+        button_t valve_2 = 1;
+        button_t valve_3 = 1;
+        button_t valve_4 = 1;
         button_t injector = 1;
         button_t ignition_pri = 1;
         button_t ignition_sec = 1;
@@ -56,10 +57,10 @@ actuator_state_t *get_button_state()
             //each button is only considered active (high)
             //if all readings in the past DEBOUNCE width
             //readings were active
-            remotefill &= button_debounce[i].remotefill;
-            remotevent &= button_debounce[i].remotevent;
-            rocketvalve &= button_debounce[i].rocketvalve;
-            linactuator &= button_debounce[i].linactuator;
+            valve_1 &= button_debounce[i].valve_1;
+            valve_2 &= button_debounce[i].valve_2;
+            valve_3 &= button_debounce[i].valve_3;
+            valve_4 &= button_debounce[i].valve_4;
             injector &= button_debounce[i].injector;
             ignition_pri &= button_debounce[i].ignition_pri;
             ignition_sec &= button_debounce[i].ignition_sec;
@@ -67,17 +68,17 @@ actuator_state_t *get_button_state()
         }
 
         //now decode the debounced button states into an actuator_state_t
-        global_button_state.remote_fill_valve =
-            remotefill ? 1 : 0;
-        global_button_state.remote_vent_valve =
-            remotevent ? 1 : 0;
-        global_button_state.run_tank_valve =
-            rocketvalve ? 1 : 0;
+        global_button_state.valve_1 =
+            valve_1 ? 1 : 0;
+        global_button_state.valve_2 =
+            valve_2 ? 1 : 0;
+        global_button_state.valve_3 =
+            valve_3 ? 1 : 0;
         global_button_state.injector_valve =
             injector ? 1 : 0;
-        global_button_state.linear_actuator =
-            linactuator ? 1 : 0;
-
+        global_button_state.valve_4 =
+            valve_4 ? 1 : 0;
+        
         //by default, ignition relays are both off
         global_button_state.ignition_power = global_button_state.ignition_select = 0;
         if (ignition_fire) {
@@ -110,14 +111,14 @@ daq_holder_t *get_tower_daq()
 
 void read_all_buttons()
 {
-    button_debounce[button_debounce_index].remotefill =
-        digitalRead(PIN_SWITCH_REMOTEFILL) == HIGH;
-    button_debounce[button_debounce_index].remotevent =
-        digitalRead(PIN_SWITCH_REMOTEVENT) == HIGH;
-    button_debounce[button_debounce_index].rocketvalve =
-        digitalRead(PIN_SWITCH_ROCKETVALVE) == HIGH;
-    button_debounce[button_debounce_index].linactuator =
-        digitalRead(PIN_SWITCH_LINACTUATOR) == HIGH;
+    button_debounce[button_debounce_index].valve_1 =
+        digitalRead(PIN_SWITCH_VALVE_1) == HIGH;
+    button_debounce[button_debounce_index].valve_2 =
+        digitalRead(PIN_SWITCH_VALVE_2) == HIGH;
+    button_debounce[button_debounce_index].valve_3 =
+        digitalRead(PIN_SWITCH_VALVE_3) == HIGH;
+    button_debounce[button_debounce_index].valve_4 =
+        digitalRead(PIN_SWITCH_VALVE_4) == HIGH;
     button_debounce[button_debounce_index].injector =
         digitalRead(PIN_SWITCH_INJECTOR) == HIGH;
     button_debounce[button_debounce_index].ignition_pri =
@@ -137,10 +138,10 @@ void read_all_buttons()
 
 void init_buttons()
 {
-    pinMode(PIN_SWITCH_REMOTEFILL, INPUT);
-    pinMode(PIN_SWITCH_REMOTEVENT, INPUT);
-    pinMode(PIN_SWITCH_ROCKETVALVE, INPUT);
-    pinMode(PIN_SWITCH_LINACTUATOR, INPUT);
+    pinMode(PIN_SWITCH_VALVE_1, INPUT);
+    pinMode(PIN_SWITCH_VALVE_2, INPUT);
+    pinMode(PIN_SWITCH_VALVE_3, INPUT);
+    pinMode(PIN_SWITCH_VALVE_4, INPUT);
     pinMode(PIN_SWITCH_INJECTOR, INPUT);
     pinMode(PIN_SWITCH_IGNITION_PRI, INPUT);
     pinMode(PIN_SWITCH_IGNITION_SEC, INPUT);
@@ -149,11 +150,49 @@ void init_buttons()
     //zero out all the buttons
     memset(&button_debounce, 0, sizeof(button_debounce));
 
+    //battery sensing
+    pinMode(PIN_BATTERY, INPUT);
+
     //LEDs. Turn on the red one first
     pinMode(PIN_LED_RED, OUTPUT);
     pinMode(PIN_LED_GREEN, OUTPUT);
+    pinMode(PIN_LED_BLUE, OUTPUT);
     digitalWrite(PIN_LED_RED, HIGH);
     digitalWrite(PIN_LED_GREEN, LOW);
+    digitalWrite(PIN_LED_BLUE, LOW);
+
+    //switch LEDS
+    pinMode(PIN_LED_SWITCH_1, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_1, HIGH);
+    pinMode(PIN_LED_SWITCH_2, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_2, HIGH);
+    pinMode(PIN_LED_SWITCH_3, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_3, HIGH);
+    pinMode(PIN_LED_SWITCH_4, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_4, HIGH);
+    pinMode(PIN_LED_SWITCH_5, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_5, HIGH);
+    pinMode(PIN_LED_SWITCH_6, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_6, HIGH);
+    pinMode(PIN_LED_SWITCH_7, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_7, HIGH);
+    pinMode(PIN_LED_SWITCH_8, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_8, HIGH);
+    pinMode(PIN_LED_SWITCH_IGNITION_PRI, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_IGNITION_PRI, HIGH);
+    pinMode(PIN_LED_SWITCH_IGNITION_SEC, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_IGNITION_SEC, HIGH);
+    pinMode(PIN_LED_SWITCH_IGNITION_FIRE, OUTPUT);
+    digitalWrite(PIN_LED_SWITCH_IGNITION_FIRE, HIGH);
+    
+}
+
+void key_switch_init(){
+  // tie the pin to GND
+  pinMode(PIN_KEY_SWITCH_GND, OUTPUT);
+  digitalWrite(PIN_KEY_SWITCH_GND, LOW);
+  //set as input with pullup
+  pinMode(PIN_KEY_SWITCH_INPUT, INPUT_PULLUP);
 }
 
 static int led_state = 0;
@@ -174,14 +213,27 @@ void set_radio_status(int state)
     led_state = state;
 }
 
+void set_switch_LEDs(bool state){
+  digitalWrite(PIN_LED_SWITCH_1, !state);
+  digitalWrite(PIN_LED_SWITCH_2, !state);
+  digitalWrite(PIN_LED_SWITCH_3, !state);
+  digitalWrite(PIN_LED_SWITCH_4, !state);
+  digitalWrite(PIN_LED_SWITCH_5, !state);
+  digitalWrite(PIN_LED_SWITCH_6, !state);
+  digitalWrite(PIN_LED_SWITCH_7, !state);
+  digitalWrite(PIN_LED_SWITCH_8, !state);
+  digitalWrite(PIN_LED_SWITCH_IGNITION_PRI, !state);
+  digitalWrite(PIN_LED_SWITCH_IGNITION_SEC, !state);
+  digitalWrite(PIN_LED_SWITCH_IGNITION_FIRE, !state);
+  
+}
 
 //globals for how long it's been since we've made requests to the tower
 unsigned long global_time_last_tower_state_req = 0;
 const unsigned long global_tower_update_interval = 1000; //request every second
 const unsigned long global_radio_timeout = 5000; //we've lost radio contact
 unsigned long global_time_last_tower_daq_req = 0;
-const unsigned long global_tower_daq_update_interval =
-    1000; //request daq every 1 seconds
+const unsigned long global_tower_daq_update_interval = 1000; //request daq every 1 seconds
 //how often to flush the buffered output to the SD card
 unsigned long global_time_last_output_flush = 0;
 const unsigned long global_output_flush_interval = 30000; //every 30 seconds

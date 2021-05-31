@@ -3,6 +3,7 @@
 
 #include "shared_types.h"
 #include "nodeio.ioio.h"
+#include "injector.h"
 
 #ifdef __cplusplus
 extern "C" {

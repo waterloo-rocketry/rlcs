@@ -20,12 +20,16 @@ static struct {
     //all limit switches are digital values (either 1 or 0)
     //these could be packed into a bit field, but I'm not 
     //at all worried about space, so am currently using uint8_t's
-    uint8_t lsw_remotefill_opn;
-    uint8_t lsw_remotefill_cls;
-    uint8_t lsw_remotevent_opn;
-    uint8_t lsw_remotevent_cls;
-    uint8_t lsw_linac_ext;
-    uint8_t lsw_linac_ret;
+    uint8_t lsw_valve_1_opn;
+    uint8_t lsw_valve_1_cls;
+    uint8_t lsw_valve_2_opn;
+    uint8_t lsw_valve_2_cls;
+    uint8_t lsw_valve_3_opn;
+    uint8_t lsw_valve_3_cls;
+    uint8_t lsw_valve_4_opn;
+    uint8_t lsw_valve_4_cls;
+    uint8_t lsw_injector_valve_opn;
+    uint8_t lsw_injector_valve_cls;
 } window_holder[WINDOW_WIDTH];
 
 
@@ -37,13 +41,17 @@ void init_daq_pins() {
     pinMode(PIN_CURRENT_IGNITION_SEC, INPUT);
     pinMode(PIN_BATTERY_MAIN, INPUT);
     pinMode(PIN_BATTERY_ACTUATORS, INPUT);
-    pinMode(PIN_LIMITSW_REMOTEFILL_OPN, INPUT);
-    pinMode(PIN_LIMITSW_REMOTEFILL_CLS, INPUT);
-    pinMode(PIN_LIMITSW_REMOTEVENT_OPN, INPUT);
-    pinMode(PIN_LIMITSW_REMOTEVENT_CLS, INPUT);
-    pinMode(PIN_LIMITSW_LINAC_EXT, INPUT);
-    pinMode(PIN_LIMITSW_LINAC_RET, INPUT);
-
+    pinMode(PIN_LIMITSW_VALVE_1_OPN, INPUT);
+    pinMode(PIN_LIMITSW_VALVE_1_CLS, INPUT);
+    pinMode(PIN_LIMITSW_VALVE_2_OPN, INPUT);
+    pinMode(PIN_LIMITSW_VALVE_2_CLS, INPUT);
+    pinMode(PIN_LIMITSW_VALVE_3_OPN, INPUT);
+    pinMode(PIN_LIMITSW_VALVE_3_CLS, INPUT);
+    pinMode(PIN_LIMITSW_VALVE_4_OPN, INPUT);
+    pinMode(PIN_LIMITSW_VALVE_4_CLS, INPUT);
+    pinMode(PIN_LIMITSW_INJECTOR_VALVE_OPN, INPUT);
+    pinMode(PIN_LIMITSW_INJECTOR_VALVE_CLS, INPUT);
+    
     //set all the values in our window holder to 0
     memset(&window_holder, 0, sizeof(window_holder));
 }
@@ -67,19 +75,27 @@ void read_daq_pins() {
         analogRead(PIN_BATTERY_ACTUATORS);
 
     //now read in all the digital values
-    window_holder[window_holder_index].lsw_remotefill_opn =
-        digitalRead(PIN_LIMITSW_REMOTEFILL_OPN);
-    window_holder[window_holder_index].lsw_remotefill_cls =
-        digitalRead(PIN_LIMITSW_REMOTEFILL_CLS);
-    window_holder[window_holder_index].lsw_remotevent_opn =
-        digitalRead(PIN_LIMITSW_REMOTEVENT_OPN);
-    window_holder[window_holder_index].lsw_remotevent_cls =
-        digitalRead(PIN_LIMITSW_REMOTEVENT_CLS);
-    window_holder[window_holder_index].lsw_linac_ext =
-        digitalRead(PIN_LIMITSW_LINAC_EXT);
-    window_holder[window_holder_index].lsw_linac_ret =
-        digitalRead(PIN_LIMITSW_LINAC_RET);
-
+    window_holder[window_holder_index].lsw_valve_1_opn =
+        digitalRead(PIN_LIMITSW_VALVE_1_OPN);
+    window_holder[window_holder_index].lsw_valve_1_cls =
+        digitalRead(PIN_LIMITSW_VALVE_1_CLS);
+    window_holder[window_holder_index].lsw_valve_2_opn =
+        digitalRead(PIN_LIMITSW_VALVE_2_OPN);
+    window_holder[window_holder_index].lsw_valve_2_cls =
+        digitalRead(PIN_LIMITSW_VALVE_2_CLS);
+    window_holder[window_holder_index].lsw_valve_3_opn =
+        digitalRead(PIN_LIMITSW_VALVE_3_OPN);
+    window_holder[window_holder_index].lsw_valve_3_cls =
+        digitalRead(PIN_LIMITSW_VALVE_3_CLS);
+    window_holder[window_holder_index].lsw_valve_4_opn =
+        digitalRead(PIN_LIMITSW_VALVE_4_OPN);
+    window_holder[window_holder_index].lsw_valve_4_cls =
+        digitalRead(PIN_LIMITSW_VALVE_4_CLS);
+    window_holder[window_holder_index].lsw_injector_valve_opn =
+        digitalRead(PIN_LIMITSW_INJECTOR_VALVE_OPN);
+    window_holder[window_holder_index].lsw_injector_valve_cls =
+        digitalRead(PIN_LIMITSW_INJECTOR_VALVE_CLS);
+    
     //increment window counter, check if it's bigger than the window,
     //if so, set it to 0
     if(++window_holder_index >= WINDOW_WIDTH)
@@ -92,19 +108,24 @@ void compute_daq_values(daq_holder_t* output) {
     //max value of analog read is 2^10, so we can add up up to 2^6
     //samples in a uint16_t without worrying about overflow
     for(int i = 0; i < WINDOW_WIDTH; i++){
-        output->pressure1           += window_holder[i].pressure1;
-        output->pressure2           += window_holder[i].pressure2;
-        output->rocket_mass         += window_holder[i].mass;
-        output->ign_pri_current     += window_holder[i].curr_ignition_pri;
-        output->ign_sec_current     += window_holder[i].curr_ignition_sec;
-        output->rlcs_main_batt_mv   += window_holder[i].battery_main;
-        output->rlcs_actuator_batt_mv += window_holder[i].battery_actuators;
-        output->rfill_lsw_open      += window_holder[i].lsw_remotefill_opn;
-        output->rfill_lsw_closed    += window_holder[i].lsw_remotefill_cls;
-        output->rvent_lsw_open      += window_holder[i].lsw_remotevent_opn;
-        output->rvent_lsw_closed    += window_holder[i].lsw_remotevent_cls;
-        output->linac_lsw_extend    += window_holder[i].lsw_linac_ext;
-        output->linac_lsw_retract   += window_holder[i].lsw_linac_ret;
+        output->pressure1                  += window_holder[i].pressure1;
+        output->pressure2                  += window_holder[i].pressure2;
+        output->rocket_mass                += window_holder[i].mass;
+        output->ign_pri_current            += window_holder[i].curr_ignition_pri;
+        output->ign_sec_current            += window_holder[i].curr_ignition_sec;
+        output->rlcs_main_batt_mv          += window_holder[i].battery_main;
+        output->rlcs_actuator_batt_mv      += window_holder[i].battery_actuators;
+        output->valve_1_lsw_open             += window_holder[i].lsw_valve_1_opn;
+        output->valve_1_lsw_closed           += window_holder[i].lsw_valve_1_cls;
+        output->valve_2_lsw_open             += window_holder[i].lsw_valve_2_opn;
+        output->valve_2_lsw_closed           += window_holder[i].lsw_valve_2_cls;
+        output->valve_3_lsw_open           += window_holder[i].lsw_valve_3_opn;
+        output->valve_3_lsw_closed          += window_holder[i].lsw_valve_3_cls;
+        output->valve_4_lsw_open     += window_holder[i].lsw_valve_4_opn;
+        output->valve_4_lsw_closed   += window_holder[i].lsw_valve_4_cls;
+        output->injector_valve_lsw_open     += window_holder[i].lsw_injector_valve_opn;
+        output->injector_valve_lsw_closed   += window_holder[i].lsw_injector_valve_cls;
+        
     }
 
     //apply scaling values. These need calibration, so I'll just use
@@ -150,13 +171,17 @@ void compute_daq_values(daq_holder_t* output) {
     output->rlcs_actuator_batt_mv += ACTUATOR_BATT_OFFSET;
 
     //the on off values just need to be divided by the width
-    output->rfill_lsw_open = (output->rfill_lsw_open / WINDOW_WIDTH) != 0;
-    output->rfill_lsw_closed = (output->rfill_lsw_closed / WINDOW_WIDTH) != 0;
-    output->rvent_lsw_open = (output->rvent_lsw_open / WINDOW_WIDTH) != 0;
-    output->rvent_lsw_closed = (output->rvent_lsw_closed / WINDOW_WIDTH) != 0;
-    output->linac_lsw_extend = (output->linac_lsw_extend / WINDOW_WIDTH) != 0;
-    output->linac_lsw_retract = (output->linac_lsw_retract / WINDOW_WIDTH) != 0;
-
+    output->valve_1_lsw_open = (output->valve_1_lsw_open / WINDOW_WIDTH) != 0;
+    output->valve_1_lsw_closed = (output->valve_1_lsw_closed / WINDOW_WIDTH) != 0;
+    output->valve_2_lsw_open = (output->valve_2_lsw_open / WINDOW_WIDTH) != 0;
+    output->valve_2_lsw_closed = (output->valve_2_lsw_closed / WINDOW_WIDTH) != 0;
+    output->valve_3_lsw_open = (output->valve_3_lsw_open / WINDOW_WIDTH) != 0;
+    output->valve_3_lsw_closed = (output->valve_3_lsw_closed / WINDOW_WIDTH) != 0;
+    output->valve_4_lsw_open = (output->valve_4_lsw_open / WINDOW_WIDTH) != 0;
+    output->valve_4_lsw_closed = (output->valve_4_lsw_closed / WINDOW_WIDTH) != 0;
+    output->injector_valve_lsw_open = (output->injector_valve_lsw_open / WINDOW_WIDTH) != 0;
+    output->injector_valve_lsw_closed = (output->injector_valve_lsw_closed / WINDOW_WIDTH) != 0;
+    
     //log what we just computed
     // TODO
     rlcslog_log_daq_values(output);
