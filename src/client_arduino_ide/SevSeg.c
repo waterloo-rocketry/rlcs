@@ -1,10 +1,6 @@
 #include "SevSeg.h"
 #include "sd_handler.h"
-#ifdef CLIENT
 #include "client_pin_defines.h"
-#else
-#include "tower_pin_defines.h"
-#endif
 //#include <avr/io.h>
 #include<stdint.h>
 

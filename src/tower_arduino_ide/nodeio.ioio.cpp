@@ -370,12 +370,12 @@ static bool deserialize_state(system_state *state, const char *str)
     // Bits 5-2 represent the number of boards connected
     state->num_boards_connected = (raw & 0b00111100) >> 2;
     // Bits 1-0 represent the injector valve state
-    state->injector_valve_state = (raw & 0x3);
+    state->injector_valve_state = (nio_actuator_state)(raw & 0x3);
 
     raw = base64_to_binary(str[1]);
 
     // Bits 5-4 represent the vent valve state
-    state->vent_valve_state = ((raw & 0x30) >> 4);
+    state->vent_valve_state = (nio_actuator_state)((raw & 0x30) >> 4);
     // Bit 3-0 are bits 9-6 of tank pressure
     state->tank_pressure = ((uint16_t) (raw & 0xf)) << 6;
 

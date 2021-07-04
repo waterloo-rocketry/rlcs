@@ -73,7 +73,7 @@ void loop() {
     //put the current state on the the seven segment display
     char to_put_on_sevenseg;
     if( convert_state_to_radio(get_current_state(), &to_put_on_sevenseg) ) {
-        setNewNum_SevSeg( (uint8_t) fromBase64(to_put_on_sevenseg) );
+        setNewNum_SevSeg( (uint8_t) to_put_on_sevenseg);
     }
     refresh_SevSeg();
     */
