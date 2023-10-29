@@ -27,6 +27,13 @@ void apply(const ActuatorMessage &command) {
   ACTUATORS.ignition_secondary.set(command.ignition_primary); // fire both ignitions in response to ignition_primary
   ACTUATORS.fill_disconnect.set(command.fill_disconnect);
   ACTUATORS.rocket_power.set(!command.rocket_power); // the firmware inverts the command, so un-invert it here
+
+  if (command.client_side_arm_status){
+    tone(7, 4000);
+  }
+  else{
+    noTone(7);
+  }
 }
 
 SensorMessage build_sensor_message() {

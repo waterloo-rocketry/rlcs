@@ -44,6 +44,7 @@ void setup() {
     if (armed) {
       last_switch_positions = config::build_command_message();
     }
+    last_switch_positions.client_side_arm_status = armed;
 
     if ((millis() > last_sent_time + config::COMMAND_MESSAGE_INTERVAL_MS)) {
       // condition: passed COMMAND_MESSAGE_INTERVAL_MS since last time sent message

@@ -31,7 +31,7 @@ struct ActuatorMessage {
   bool rocket_power;
   bool fill_disconnect;
   //<custom remote arming enum> remote_arming;
-
+  bool client_side_arm_status;
   bool operator==(const ActuatorMessage &other) const {
     return !memcmp(this, &other, sizeof(ActuatorMessage));
   }
