@@ -22,10 +22,15 @@
 struct ActuatorMessage {
   bool ov101; // Ox Fill
   bool ov102; // Ox Drain
-  bool nv101; // N2 Purge
-  bool ov201; // Vent Isolation
-  bool ov202; // Vent Solenoid
-  bool injector_valve;
+  bool nv201; // N2 Purge
+  bool nv202; // N2 Drain (Solenoid)
+  bool vent_valve; // To DAQ laptop only
+  bool injector_valve; // To DAQ laptop only
+  bool fill_dump_valve; // To DAQ laptop only
+  bool fill_disconnect;
+  bool rocket_power;
+  bool tank_heating_1;
+  bool tank_heating_2;
   bool ignition_primary;
   bool ignition_secondary;
 
@@ -50,8 +55,19 @@ struct SensorMessage {
   // Actuator states
   ActuatorPosition::ActuatorPosition ov101_state;
   ActuatorPosition::ActuatorPosition ov102_state;
-  ActuatorPosition::ActuatorPosition nv101_state;
-  ActuatorPosition::ActuatorPosition ov201_state;
+  ActuatorPosition::ActuatorPosition nv201_state;
+  ActuatorPosition::ActuatorPosition nv202_state;
+  // Tank Heating
+  uint16_t heater_thermistor_1;
+  uint16_t heater_thermistor_2;
+  uint16_t heater_current_ma_1;
+  uint16_t heater_current_ma_2;
+  uint16_t heater_batt_mv_1;
+  uint16_t heater_batt_mv_2;
+  uint16_t heater_kelvin_low_mv_1;
+  uint16_t heater_kelvin_low_mv_2;
+  uint16_t heater_kelvin_high_mv_1;
+  uint16_t heater_kelvin_high_mv_2;
 };
 #pragma pack(pop)
 

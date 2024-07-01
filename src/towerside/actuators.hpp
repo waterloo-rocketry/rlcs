@@ -90,6 +90,112 @@ public:
   Ignition(uint8_t slave_address): I2C(slave_address) {}
 };
 
+class Heater {
+  uint8_t slave_address; // slave address we are controlling
+  bool power_set;
+  uint8_t reg_set;
+
+public:
+
+  Heater(uint8_t slave_address):
+	  slave_address{slave_address},power_set{0},reg_set{0} {}
+
+  void set(bool value) {
+	power_set = value;
+    Wire.beginTransmission(slave_address);
+    // Relay boards have two relays. One turns on power, and the other selects which direction to apply power to.
+    // LSB is power, next bit is select.
+    bool healthy = true;
+    healthy &= Wire.write(power_set | (reg_set << 1)) == 1; // returns the number of bytes written, should be 1
+    healthy &= Wire.endTransmission() == 0; // returns non-zero value if there was an error
+    healthy &= !Wire.getWireTimeoutFlag(); // make sure timeout flag is not set
+    if (!healthy) {
+      errors::push(slave_address, ErrorCode::I2CWriteError);
+    }
+    Wire.clearWireTimeoutFlag(); // if the flag was set, clear it for next time
+  }
+
+	void select_reg(uint8_t reg){
+		reg_set = reg;
+		Wire.beginTransmission(slave_address);
+		// Relay boards have two relays. One turns on power, and the other selects which direction to apply power to.
+		// LSB is power, next bit is select.
+		bool healthy = true;
+		healthy &= Wire.write(power_set | (reg_set << 1)) == 1; // returns the number of bytes written, should be 1
+		healthy &= Wire.endTransmission() == 0; // returns non-zero value if there was an error
+		healthy &= !Wire.getWireTimeoutFlag(); // make sure timeout flag is not set
+		if (!healthy) {
+			errors::push(slave_address, ErrorCode::I2CWriteError);
+		}
+		Wire.clearWireTimeoutFlag(); // if the flag was set, clear it for next time
+	}
+
+  uint16_t get_thermistor() {
+	  select_reg(0);
+    // Cast to uint8_t to avoid warning about ambiguous overload
+	  uint8_t received = Wire.requestFrom(slave_address, static_cast<uint8_t>(2)); // returns number of bytes received
+	  if (received != 2) {
+			errors::push(slave_address, ErrorCode::I2CReadError);
+			return SENSOR_ERR_VAL;
+		}
+		uint16_t adcl = Wire.read();
+		uint16_t adch = Wire.read();
+		return ((adch << 8) | adcl); // Return raw ADC values
+	}
+	
+  uint16_t get_current_ma() {
+	  select_reg(1);
+    // Cast to uint8_t to avoid warning about ambiguous overload
+	  uint8_t received = Wire.requestFrom(slave_address, static_cast<uint8_t>(2)); // returns number of bytes received
+	  if (received != 2) {
+			errors::push(slave_address, ErrorCode::I2CReadError);
+			return SENSOR_ERR_VAL;
+		}
+	  uint16_t adcl = Wire.read();
+	  uint16_t adch = Wire.read();
+	  return ((adch << 8) | adcl) * 40; // adc / 1024 (10bit) * 4096mV (vref) / 1mohm / 100 adc scaler * 1000 mV/V
+  }
+
+	uint16_t get_batt_voltage() {
+	  select_reg(2);
+    // Cast to uint8_t to avoid warning about ambiguous overload
+	  uint8_t received = Wire.requestFrom(slave_address, static_cast<uint8_t>(2)); // returns number of bytes received
+	  if (received != 2) {
+			errors::push(slave_address, ErrorCode::I2CReadError);
+			return SENSOR_ERR_VAL;
+		}
+	  uint16_t adcl = Wire.read();
+	  uint16_t adch = Wire.read();
+	  return ((adch << 8) | adcl) * 28; // adc / 1024 (10bit) * 4096mV (vref) * 7.04
+  }
+
+	uint16_t get_kelvin_low_voltage() {
+	  select_reg(3);
+    // Cast to uint8_t to avoid warning about ambiguous overload
+	  uint8_t received = Wire.requestFrom(slave_address, static_cast<uint8_t>(2)); // returns number of bytes received
+	  if (received != 2) {
+			errors::push(slave_address, ErrorCode::I2CReadError);
+			return SENSOR_ERR_VAL;
+		}
+	  uint16_t adcl = Wire.read();
+	  uint16_t adch = Wire.read();
+	  return ((adch << 8) | adcl) * 28; // adc / 1024 (10bit) * 4096mV (vref) * 7.04
+  }
+	
+	uint16_t get_kelvin_high_voltage() {
+	  select_reg(4);
+    // Cast to uint8_t to avoid warning about ambiguous overload
+	  uint8_t received = Wire.requestFrom(slave_address, static_cast<uint8_t>(2)); // returns number of bytes received
+	  if (received != 2) {
+			errors::push(slave_address, ErrorCode::I2CReadError);
+			return SENSOR_ERR_VAL;
+		}
+	  uint16_t adcl = Wire.read();
+	  uint16_t adch = Wire.read();
+	  return ((adch << 8) | adcl) * 28; // adc / 1024 (10bit) * 4096mV (vref) * 7.04
+  }
+};
+	
 } // namespace actuator
 
 #endif
