@@ -75,7 +75,7 @@ public:
     }
     uint16_t adcl = Wire.read(); // get the 16-bit current reading
     uint16_t adch = Wire.read();
-    return ((adch << 8) | adcl) * 4; // adc / 1024 (10bit) * 4096mV (vref) / 10mohm / 100 adc scaler * 1000 mV/V
+    return ((adch << 8) | adcl) * 20; // adc / 1024 (10bit) * 4096mV (vref) / 10mohm / 20 adc scaler * 1000 mV/V
   }
 };
 

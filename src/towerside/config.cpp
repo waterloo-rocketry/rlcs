@@ -14,8 +14,9 @@ struct Actuators {
   actuator::I2C qd301{7};
   actuator::I2C ov302{8};
   actuator::I2C pyro_valve{9};
+  actuator::I2C rocket_charging{10};
   actuator::Ignition ignition_primary{1};
-  // actuator::Ignition ignition_secondary{7};
+  actuator::Ignition ignition_secondary{11};
   actuator::Heater heater_1{16};
   actuator::Heater heater_2{17};
 } ACTUATORS;
@@ -30,8 +31,9 @@ void apply(const ActuatorMessage &command) {
   ACTUATORS.qd301.set(command.qd301);
   ACTUATORS.ov302.set(command.ov302);
   ACTUATORS.pyro_valve.set(command.pyro_valve);
+  ACTUATORS.rocket_charging.set(command.rocket_charging);
   ACTUATORS.ignition_primary.set(command.ignition_primary);
-  // ACTUATORS.ignition_secondary.set(command.ignition_primary); // fire both ignitions in response to ignition_primary
+  ACTUATORS.ignition_secondary.set(command.ignition_secondary);
   ACTUATORS.heater_1.set(command.tank_heating_1);
   ACTUATORS.heater_2.set(command.tank_heating_2);
 }
@@ -45,7 +47,7 @@ SensorMessage build_sensor_message() {
       .towerside_armed = sensors::is_armed(),
       .has_contact = sensors::has_contact(),
       .ignition_primary_ma = ACTUATORS.ignition_primary.get_current_ma(0),
-      .ignition_secondary_ma = ACTUATORS.ignition_primary.get_current_ma(0),
+      .ignition_secondary_ma = ACTUATORS.ignition_secondary.get_current_ma(0),
       .ov101_state = ACTUATORS.ov101.get_state(),
       .ov102_state = ACTUATORS.ov102.get_state(),
       .cdv401_state = ACTUATORS.cdv401.get_state(),

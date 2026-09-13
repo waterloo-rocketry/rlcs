@@ -28,6 +28,7 @@ struct ActuatorMessage {
   bool qd301; // Nitrogen Isolation Valve
   bool ov302; // OV-302 Injector Valves
   bool pyro_valve; // pyro valve
+  bool rocket_charging; //rocket charging
   bool tank_heating_1;
   bool tank_heating_2;
   bool ignition_primary;

@@ -10,6 +10,7 @@ ActuatorMessage build_safe_state(const ActuatorMessage &current_state) {
       .qd301 = false,
       .ov302 = false,
       .pyro_valve = false,
+      .rocket_charging = false,
       .tank_heating_1 = false,
       .tank_heating_2 = false,
       .ignition_primary = false,

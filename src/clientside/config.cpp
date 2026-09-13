@@ -14,15 +14,15 @@ ActuatorMessage build_command_message() {
       .qd301 = digitalRead(pinout::MISSILE_SWITCH_IGNITION_SEC),
       .ov302 = digitalRead(pinout::MISSILE_SWITCH_INJECTOR),
       .pyro_valve = digitalRead(pinout::MISSILE_SWITCH_6),
+      .rocket_charging = digitalRead(pinout::MISSILE_SWITCH_7),
       .tank_heating_1 = digitalRead(pinout::MISSILE_SWITCH_8),
       .tank_heating_2 = digitalRead(pinout::MISSILE_SWITCH_8),
       .ignition_primary =
           digitalRead(pinout::MISSILE_SWITCH_IGNITION_PRI) &&
           !digitalRead(pinout::MISSILE_SWITCH_IGNITION_FIRE), // active low
-    //   .ignition_secondary =
-    //       digitalRead(pinout::MISSILE_SWITCH_IGNITION_SEC) &&
-    //       !digitalRead(pinout::MISSILE_SWITCH_IGNITION_PRI) &&
-    //       !digitalRead(pinout::MISSILE_SWITCH_IGNITION_FIRE), // active low
+      .ignition_secondary = // fire secondary ignition with primary ignition switch
+        digitalRead(pinout::MISSILE_SWITCH_IGNITION_PRI) &&
+        !digitalRead(pinout::MISSILE_SWITCH_IGNITION_FIRE), // active low
   };
 }
 
